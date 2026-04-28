@@ -463,8 +463,8 @@ aws cloudformation create-stack \
 ```
 
 > **IMPORTANTE**: Reemplaza `TU_USUARIO_GITHUB` con tu nombre de usuario de GitHub (ejemplo: `JuanPerez`).
->
 > Si nombraste tu repositorio diferente a `reto3_udem`, cambia también `reto3_udem` por el nombre correcto.
+> Valida la rama en la cual esta el código, por defecto queda en la rama "main" pero en caso de modificarla (por ejemplo por "master") reemplaza el Value=main del parametro GitHubBranch
 
 ### 8.2 - Verificar que se está creando
 
