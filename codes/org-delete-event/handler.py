@@ -10,6 +10,7 @@ logger.setLevel(logging.INFO)
 dynamodb = boto3.resource("dynamodb")
 rds_client = boto3.client("rds-data")
 events_client = boto3.client("events")
+ses_client = boto3.client("ses")
 
 EVENTS_TABLE = os.environ["DYNAMODB_EVENTS_TABLE"]
 SEATS_TABLE = os.environ["DYNAMODB_SEATS_TABLE"]
@@ -17,6 +18,7 @@ AURORA_CLUSTER_ARN = os.environ["AURORA_CLUSTER_ARN"]
 AURORA_SECRET_ARN = os.environ["AURORA_SECRET_ARN"]
 AURORA_DB_NAME = os.environ["AURORA_DB_NAME"]
 EVENTBRIDGE_BUS_NAME = os.environ["EVENTBRIDGE_BUS_NAME"]
+SES_EMAIL = os.environ.get("SES_EMAIL", "")
 STAGE = os.environ["STAGE"]
 
 
@@ -126,6 +128,30 @@ def lambda_handler(event, context):
                 logger.info(f"Evento EventCancelled enviado a EventBridge para {len(user_emails)} usuarios")
             except Exception as eb_error:
                 logger.error(f"Error al enviar evento a EventBridge: {str(eb_error)}")
+
+        # Enviar correo de cancelación directamente a usuarios registrados via SES
+        if user_emails and SES_EMAIL:
+            for email in user_emails:
+                try:
+                    ses_client.send_email(
+                        Source=SES_EMAIL,
+                        Destination={"ToAddresses": [email]},
+                        Message={
+                            "Subject": {"Data": f"Evento Cancelado - {event_name}"},
+                            "Body": {
+                                "Text": {
+                                    "Data": (
+                                        f"Lamentamos informarte que el evento {event_name} ha sido cancelado.\n\n"
+                                        f"ID del evento: {event_id}\n\n"
+                                        f"Si tenias una reserva, esta ha sido liberada automaticamente."
+                                    )
+                                }
+                            },
+                        },
+                    )
+                    logger.info(f"Correo de cancelacion enviado via SES a {email}")
+                except Exception as ses_error:
+                    logger.warning(f"No se pudo enviar correo SES a {email}: {str(ses_error)}")
 
         # Limpiar asientos de DynamoDB
         with seats_table.batch_writer() as batch:

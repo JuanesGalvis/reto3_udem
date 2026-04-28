@@ -92,79 +92,10 @@ Resources:
           Id: "ReportQueueTarget"
 
   # ===================================================================
-  #  Reglas de EventBridge para notificaciones via SNS
+  #  Reglas de EventBridge para notificaciones
   # ===================================================================
 
-  # --- Notificación de confirmación de reserva de asiento ---
-  SeatReservedNotificationRule:
-    Type: AWS::Events::Rule
-    DependsOn: NotificationTopicPolicy
-    Properties:
-      Name: !Sub "reto3-${Stage}-seat-reserved-notification"
-      EventBusName: !Ref EventBus
-      EventPattern:
-        source:
-          - prefix: !Sub "reto3.${Stage}"
-        detail-type:
-          - "SeatReserved"
-      Targets:
-        - Arn: !Ref NotificationTopic
-          Id: "SNSSeatReserved"
-          InputTransformer:
-            InputPathsMap:
-              event_name: "$.detail.event_name"
-              seat_id: "$.detail.seat_id"
-              event_date: "$.detail.event_date"
-              event_time: "$.detail.event_time"
-              reservation_id: "$.detail.reservation_id"
-              user_email: "$.detail.user_email"
-            InputTemplate: '"Confirmacion de Registro Exitosa\n\nHola! Tu reserva ha sido confirmada.\n\nEvento: <event_name>\nAsiento: <seat_id>\nFecha: <event_date>\nHora: <event_time>\nID de reserva: <reservation_id>\nCorreo: <user_email>\n\nTe esperamos!"'
-
-  # --- Notificación de actualización de evento ---
-  EventUpdatedNotificationRule:
-    Type: AWS::Events::Rule
-    DependsOn: NotificationTopicPolicy
-    Properties:
-      Name: !Sub "reto3-${Stage}-event-updated-notification"
-      EventBusName: !Ref EventBus
-      EventPattern:
-        source:
-          - prefix: !Sub "reto3.${Stage}"
-        detail-type:
-          - "EventUpdated"
-      Targets:
-        - Arn: !Ref NotificationTopic
-          Id: "SNSEventUpdated"
-          InputTransformer:
-            InputPathsMap:
-              event_name: "$.detail.event_name"
-              event_id: "$.detail.event_id"
-              user_emails: "$.detail.user_emails"
-            InputTemplate: '"Actualizacion de Evento\n\nEl evento <event_name> ha sido actualizado por el organizador.\n\nID del evento: <event_id>\nUsuarios registrados notificados: <user_emails>\n\nPor favor revisa los detalles actualizados del evento."'
-
-  # --- Notificación de cancelación de evento ---
-  EventCancelledNotificationRule:
-    Type: AWS::Events::Rule
-    DependsOn: NotificationTopicPolicy
-    Properties:
-      Name: !Sub "reto3-${Stage}-event-cancelled-notification"
-      EventBusName: !Ref EventBus
-      EventPattern:
-        source:
-          - prefix: !Sub "reto3.${Stage}"
-        detail-type:
-          - "EventCancelled"
-      Targets:
-        - Arn: !Ref NotificationTopic
-          Id: "SNSEventCancelled"
-          InputTransformer:
-            InputPathsMap:
-              event_name: "$.detail.event_name"
-              event_id: "$.detail.event_id"
-              user_emails: "$.detail.user_emails"
-            InputTemplate: '"Evento Cancelado\n\nLamentamos informarte que el evento <event_name> ha sido cancelado.\n\nID del evento: <event_id>\nUsuarios afectados: <user_emails>\n\nSi tenias una reserva, esta ha sido liberada automaticamente."'
-
-  # --- Notificación de alerta/campaña creada por organizador ---
+  # --- Notificación de alerta/campaña creada por organizador (SNS - a todos los suscriptores) ---
   AlertCreatedNotificationRule:
     Type: AWS::Events::Rule
     DependsOn: NotificationTopicPolicy

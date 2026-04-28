@@ -10,12 +10,14 @@ logger.setLevel(logging.INFO)
 rds_client = boto3.client("rds-data")
 dynamodb = boto3.resource("dynamodb")
 events_client = boto3.client("events")
+ses_client = boto3.client("ses")
 
 AURORA_CLUSTER_ARN = os.environ["AURORA_CLUSTER_ARN"]
 AURORA_SECRET_ARN = os.environ["AURORA_SECRET_ARN"]
 AURORA_DB_NAME = os.environ["AURORA_DB_NAME"]
 DYNAMODB_SEATS_TABLE = os.environ["DYNAMODB_SEATS_TABLE"]
 EVENTBRIDGE_BUS_NAME = os.environ["EVENTBRIDGE_BUS_NAME"]
+SES_EMAIL = os.environ.get("SES_EMAIL", "")
 STAGE = os.environ["STAGE"]
 
 
@@ -122,7 +124,7 @@ def lambda_handler(event, context):
             if s.get("status") == "reserved" and s.get("user_email")
         ))
 
-        # Enviar evento de actualización a EventBridge para notificar a usuarios registrados
+        # Enviar evento de actualización a EventBridge
         if user_emails:
             try:
                 events_client.put_events(
@@ -143,6 +145,31 @@ def lambda_handler(event, context):
                 logger.info(f"Evento EventUpdated enviado a EventBridge para {len(user_emails)} usuarios")
             except Exception as eb_error:
                 logger.error(f"Error al enviar evento a EventBridge: {str(eb_error)}")
+
+        # Enviar correo de actualización directamente a usuarios registrados via SES
+        if user_emails and SES_EMAIL:
+            for email in user_emails:
+                try:
+                    ses_client.send_email(
+                        Source=SES_EMAIL,
+                        Destination={"ToAddresses": [email]},
+                        Message={
+                            "Subject": {"Data": f"Actualizacion de Evento - {event_name}"},
+                            "Body": {
+                                "Text": {
+                                    "Data": (
+                                        f"El evento {event_name} ha sido actualizado por el organizador.\n\n"
+                                        f"ID del evento: {event_id}\n"
+                                        f"Campos actualizados: {', '.join(body.keys())}\n\n"
+                                        f"Por favor revisa los detalles actualizados del evento."
+                                    )
+                                }
+                            },
+                        },
+                    )
+                    logger.info(f"Correo de actualizacion enviado via SES a {email}")
+                except Exception as ses_error:
+                    logger.warning(f"No se pudo enviar correo SES a {email}: {str(ses_error)}")
 
         logger.info(f"Evento editado: {event_id} por organizador {organizer_id}")
 
