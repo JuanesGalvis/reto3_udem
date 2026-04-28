@@ -436,7 +436,7 @@ Resources:
     Properties:
       ServiceToken: !GetAtt AuroraInitFunction.Arn
       # Cambiar este valor para forzar re-ejecucion si se modifica el schema
-      SchemaVersion: "1.0"
+      SchemaVersion: "2.0"
 
 # =====================================================================
 #  OUTPUTS
