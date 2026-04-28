@@ -368,6 +368,15 @@ Resources:
                   - secretsmanager:GetSecretValue
                 Resource: !ImportValue
                   Fn::Sub: "reto3-${Stage}-aurora-secret-arn"
+        - PolicyName: SNSSubscribeAccess
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sns:Subscribe
+                Resource: !ImportValue
+                  Fn::Sub: "reto3-${Stage}-sns-topic-arn"
 
   # ===================================================================
   #  CLOUDWATCH LOG GROUPS
@@ -504,6 +513,8 @@ Resources:
             Fn::Sub: "reto3-${Stage}-aurora-secret-arn"
           AURORA_DB_NAME: !ImportValue
             Fn::Sub: "reto3-${Stage}-aurora-db-name"
+          SNS_TOPIC_ARN: !ImportValue
+            Fn::Sub: "reto3-${Stage}-sns-topic-arn"
 
   AuthLoginFunction:
     Type: AWS::Lambda::Function

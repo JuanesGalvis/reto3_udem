@@ -164,6 +164,30 @@ Resources:
               user_emails: "$.detail.user_emails"
             InputTemplate: '"Evento Cancelado\n\nLamentamos informarte que el evento <event_name> ha sido cancelado.\n\nID del evento: <event_id>\nUsuarios afectados: <user_emails>\n\nSi tenias una reserva, esta ha sido liberada automaticamente."'
 
+  # --- Notificación de alerta/campaña creada por organizador ---
+  AlertCreatedNotificationRule:
+    Type: AWS::Events::Rule
+    DependsOn: NotificationTopicPolicy
+    Properties:
+      Name: !Sub "reto3-${Stage}-alert-created-notification"
+      EventBusName: !Ref EventBus
+      EventPattern:
+        source:
+          - prefix: !Sub "reto3.${Stage}"
+        detail-type:
+          - "AlertCreated"
+      Targets:
+        - Arn: !Ref NotificationTopic
+          Id: "SNSAlertCreated"
+          InputTransformer:
+            InputPathsMap:
+              title: "$.detail.title"
+              alert_type: "$.detail.alert_type"
+              event_id: "$.detail.event_id"
+              target_audience: "$.detail.target_audience"
+              created_at: "$.detail.created_at"
+            InputTemplate: '"Nueva Alerta del Organizador\n\nTitulo: <title>\nTipo: <alert_type>\nEvento ID: <event_id>\nAudiencia: <target_audience>\nFecha de creacion: <created_at>\n\nRevisa los detalles del evento para mas informacion."'
+
   # ===================================================================
   #  Permiso para que EventBridge pueda enviar mensajes a la cola de SQS
   # ===================================================================

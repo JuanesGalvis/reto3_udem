@@ -710,6 +710,19 @@ Crea otra petición similar:
 
 Haz clic en **"Send"**.
 
+### 16.4 - Confirmar la Suscripción a Notificaciones (SNS)
+
+Al registrar cada usuario, el sistema lo suscribe automáticamente al tópico de notificaciones de **Amazon SNS**. Para que el usuario reciba correos de notificación (alertas, confirmaciones de reserva, actualizaciones de eventos, etc.), debe **confirmar la suscripción**:
+
+1. Abre la **bandeja de entrada** del correo que usaste para registrar al usuario (tanto el organizador como el comprador)
+2. Busca un correo de **"AWS Notifications"** con asunto **"AWS Notification - Subscription Confirmation"**
+3. Haz clic en el enlace **"Confirm subscription"** dentro del correo
+4. Deberías ver una página de AWS confirmando la suscripción: **"Subscription confirmed!"** ✅
+
+> **IMPORTANTE**: Repite este paso para **cada usuario registrado** (organizador y comprador). Si no se confirma la suscripción, ese usuario no recibirá las notificaciones por correo.
+
+> **NOTA**: Si no ves el correo, revisa la carpeta de **spam/correo no deseado**. Los correos de confirmación de SNS a veces pueden llegar ahí.
+
 ---
 
 ## Paso 17 - Iniciar Sesión y Obtener Token JWT

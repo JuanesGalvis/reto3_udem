@@ -8,12 +8,14 @@ logger.setLevel(logging.INFO)
 
 cognito = boto3.client("cognito-idp")
 rds_client = boto3.client("rds-data")
+sns_client = boto3.client("sns")
 
 USER_POOL_ID = os.environ["USER_POOL_ID"]
 CLIENT_ID = os.environ["CLIENT_ID"]
 AURORA_CLUSTER_ARN = os.environ.get("AURORA_CLUSTER_ARN", "")
 AURORA_SECRET_ARN = os.environ.get("AURORA_SECRET_ARN", "")
 AURORA_DB_NAME = os.environ.get("AURORA_DB_NAME", "")
+SNS_TOPIC_ARN = os.environ.get("SNS_TOPIC_ARN", "")
 
 
 def lambda_handler(event, context):
@@ -95,6 +97,18 @@ def lambda_handler(event, context):
                 ],
             )
             logger.info(f"Organizador registrado en Aurora: {user_sub}")
+
+        # 6. Suscribir el correo del usuario al tópico SNS de notificaciones
+        if SNS_TOPIC_ARN:
+            try:
+                sns_client.subscribe(
+                    TopicArn=SNS_TOPIC_ARN,
+                    Protocol="email",
+                    Endpoint=email,
+                )
+                logger.info(f"Usuario {email} suscrito al tópico SNS de notificaciones")
+            except Exception as sns_error:
+                logger.warning(f"No se pudo suscribir {email} al tópico SNS: {str(sns_error)}")
 
         logger.info(f"Usuario registrado: {email}, grupo: {group}")
 
