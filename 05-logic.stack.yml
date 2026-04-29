@@ -222,7 +222,11 @@ Resources:
                 Action:
                   - s3:PutObject
                   - s3:GetObject
-                Resource: !Sub "arn:aws:s3:::reto3-${Stage}-reports/*"
+                Resource:
+                  - !Sub
+                    - "arn:aws:s3:::${BucketName}/*"
+                    - BucketName: !ImportValue
+                        Fn::Sub: "reto3-${Stage}-reports-bucket-name"
 
         - PolicyName: SNSPublishAccess
           PolicyDocument:
