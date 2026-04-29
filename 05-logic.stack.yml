@@ -209,11 +209,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - s3:PutObject
-                Resource:
-                  - !Sub
-                    - "arn:aws:s3:::${BucketName}/*"
-                    - BucketName: !ImportValue
-                        Fn::Sub: "reto3-${Stage}-reports-bucket-name"
+                Resource: !Sub "arn:aws:s3:::reto3-${Stage}-${AWS::AccountId}-reports/*"
         - PolicyName: S3ReportsAccess
           PolicyDocument:
             Version: "2012-10-17"
@@ -222,11 +218,7 @@ Resources:
                 Action:
                   - s3:PutObject
                   - s3:GetObject
-                Resource:
-                  - !Sub
-                    - "arn:aws:s3:::${BucketName}/*"
-                    - BucketName: !ImportValue
-                        Fn::Sub: "reto3-${Stage}-reports-bucket-name"
+                Resource: !Sub "arn:aws:s3:::reto3-${Stage}-${AWS::AccountId}-reports/*"
 
         - PolicyName: SNSPublishAccess
           PolicyDocument:
@@ -780,8 +772,7 @@ Resources:
             Fn::Sub: "reto3-${Stage}-report-queue-url"
           SNS_TOPIC_ARN: !ImportValue
             Fn::Sub: "reto3-${Stage}-sns-topic-arn"
-          REPORTS_BUCKET: !ImportValue
-            Fn::Sub: "reto3-${Stage}-reports-bucket-name"
+          REPORTS_BUCKET: !Sub "reto3-${Stage}-${AWS::AccountId}-reports"
 
   OrgGetEventSeatsFunction:
     Type: AWS::Lambda::Function
@@ -1007,8 +998,7 @@ Resources:
       Environment:
         Variables:
           STAGE: !Ref Stage
-          REPORTS_BUCKET: !ImportValue
-            Fn::Sub: "reto3-${Stage}-reports-bucket-name"
+          REPORTS_BUCKET: !Sub "reto3-${Stage}-${AWS::AccountId}-reports"
           SNS_TOPIC_ARN: !ImportValue
             Fn::Sub: "reto3-${Stage}-sns-topic-arn"
           DYNAMODB_EVENTS_TABLE: !ImportValue
